@@ -155,7 +155,7 @@ def hostcmd_build(base_path, project_name, engine_name, var_file=None,
     logger.debug('Config settings', config=config, rawsettings=config.get('settings'),
                  conf=type(config), settings=config.get('settings', {}))
 
-    save_container = config.get('settings', {}).get('save_conductor_container', False)
+    save_container = config.save_conductor
     if kwargs.get('save_conductor_container'):
         # give precedence to CLI option
         save_container = True
@@ -194,8 +194,7 @@ def hostcmd_deploy(base_path, project_name, engine_name, var_file=None,
     params['vault_files'] = config.vault_files
 
     engine_obj.await_conductor_command(
-        'deploy', dict(config), base_path, params,
-        save_container=config.get('settings', {}).get('save_conductor_container', False))
+        'deploy', dict(config), base_path, params, save_container=config.save_conductor)
 
 @host_only
 def hostcmd_run(base_path, project_name, engine_name, var_file=None, cache=True, ask_vault_password=False,
@@ -229,8 +228,7 @@ def hostcmd_run(base_path, project_name, engine_name, var_file=None, cache=True,
         params['vault_password'] = getpass.getpass(u"Enter the vault password: ")
 
     engine_obj.await_conductor_command(
-        'run', dict(config), base_path, params,
-        save_container=config.get('settings', {}).get('save_conductor_container', False))
+        'run', dict(config), base_path, params, save_container=config.save_conductor)
 
 @host_only
 def hostcmd_destroy(base_path, project_name, engine_name, var_file=None, cache=True, **kwargs):
@@ -256,8 +254,7 @@ def hostcmd_destroy(base_path, project_name, engine_name, var_file=None, cache=T
         params.update(kwargs)
 
     engine_obj.await_conductor_command(
-        'destroy', dict(config), base_path, params,
-        save_container=config.get('settings', {}).get('save_conductor_container', False))
+        'destroy', dict(config), base_path, params, save_container=config.save_conductor)
 
 @host_only
 def hostcmd_stop(base_path, project_name, engine_name, var_file=None, force=False, services=[],
@@ -280,8 +277,7 @@ def hostcmd_stop(base_path, project_name, engine_name, var_file=None, force=Fals
         params.update(kwargs)
 
     engine_obj.await_conductor_command(
-        'stop', dict(config), base_path, params,
-        save_container=config.get('settings', {}).get('save_conductor_container', False))
+        'stop', dict(config), base_path, params, save_container=config.save_conductor)
 
 
 @host_only
@@ -304,8 +300,7 @@ def hostcmd_restart(base_path, project_name, engine_name, var_file=None, force=F
         params.update(kwargs)
 
     engine_obj.await_conductor_command(
-        'restart', dict(config), base_path, params,
-        save_container=config.get('settings', {}).get('save_conductor_container', False))
+        'restart', dict(config), base_path, params, save_container=config.save_conductor)
 
 
 @host_only
@@ -326,7 +321,7 @@ def hostcmd_push(base_path, project_name, engine_name, var_file=None, **kwargs):
                 config.image_namespace,
                 engine_obj,
                 config,
-                save_conductor=config.get('settings', {}).get('save_conductor_container', False),
+                save_conductor=config.save_conductor,
                 **kwargs)
 
 
@@ -340,7 +335,7 @@ def push_images(base_path, image_namespace, engine_obj, config, **kwargs):
     url = engine_obj.default_registry_url
     registry_name = engine_obj.default_registry_name
     namespace = image_namespace
-    save_conductor = config.get('settings', {}).get('save_conductor_container', False)
+    save_conductor = config.save_conductor
     repository_prefix = None
     pull_from_url = None
 
@@ -411,7 +406,7 @@ def push_images(base_path, image_namespace, engine_obj, config, **kwargs):
 def hostcmd_install(base_path, project_name, engine_name, **kwargs):
     assert_initialized(base_path)
     config = get_config(base_path, engine_name=engine_name, project_name=project_name)
-    save_conductor = config.get('settings', {}).get('save_conductor_container', False)
+    save_conductor = config.save_conductor
     engine_obj = load_engine(['INSTALL'],
                              engine_name, config.project_name,
                              config['services'], **kwargs)
@@ -580,7 +575,7 @@ def run_playbook(playbook, engine, service_map, ansible_options='', local_python
                        '-i {inventory} '
                        '{build_args} '
                        '{orchestrate_args} '
-                       '{playbook}'
+                       '{playbook} '
                        '{vault_password_file}').format(**ansible_args)
 
         logger.debug('Running Ansible Playbook', command=ansible_cmd, cwd='/src')

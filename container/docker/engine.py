@@ -239,24 +239,24 @@ class Engine(BaseEngine):
             for volume in conductor_settings['volumes']:
                 _add_volume(volume)
 
-        pswd_file = params.get('vault_password_file') or conductor_settings.get('vault_password_file')
+        pswd_file = params.get('vault_password_file') or config.get('settings', {}).get('vault_password_file')
         if pswd_file:
-            pswd_file_path = os.path.abspath(pswd_file)
+            pswd_file_path = os.path.normpath(os.path.abspath(os.path.expanduser(pswd_file)))
             volumes[pswd_file_path] = {
                 'bind': pswd_file_path,
                 'mode': 'ro'
             }
+            params['vault_password_file'] = pswd_file_path
 
         vaults = params.get('vault_files') or config.get('settings', {}).get('vault_files')
         if vaults:
-            for v in vaults:
-                vol_path = os.path.abspath(v)
-                volumes[vol_path] = {
-                    'bind': vol_path,
+            vault_paths = [os.path.normpath(os.path.abspath(os.path.expanduser(v))) for v in vaults]
+            for vault_path in vault_paths:
+                volumes[vault_path] = {
+                    'bind': vault_path,
                     'mode': 'ro'
                 }
-            if not params.get('vault_files'):
-                params['vault_files'] = vaults
+            params['vault_files'] = vault_paths
 
         permissions = 'ro' if command != 'install' else 'rw'
         volumes[base_path] = {'bind': '/src', 'mode': permissions}
@@ -682,7 +682,7 @@ class Engine(BaseEngine):
             task_params = {
                 u'project_name': self.project_name,
                 u'definition': {
-                    u'version': u'3' if top_level_secrets else u'2',
+                    u'version': u'3.1' if top_level_secrets else u'2',
                     u'services': service_def,
                 }
             }
@@ -710,7 +710,7 @@ class Engine(BaseEngine):
             (u'gather_facts', False)
         ])]
         if vault_files:
-            playbook[0][u'vars_files'] = vault_files
+            playbook[0][u'vars_files'] = [os.path.normpath(os.path.abspath(v)) for v in vault_files]
         playbook[0][u'tasks'] = tasks
 
         for service in list(self.services.keys()) + ['conductor']:
