@@ -198,7 +198,7 @@ def hostcmd_deploy(base_path, project_name, engine_name, var_file=None,
         save_container=config.get('settings', {}).get('save_conductor_container', False))
 
 @host_only
-def hostcmd_run(base_path, project_name, engine_name, var_file=None, cache=True,
+def hostcmd_run(base_path, project_name, engine_name, var_file=None, cache=True, ask_vault_password=False,
                 **kwargs):
     assert_initialized(base_path)
     logger.debug('Got extra args to `run` command', arguments=kwargs)
@@ -224,6 +224,9 @@ def hostcmd_run(base_path, project_name, engine_name, var_file=None, cache=True,
         params.update(kwargs)
 
     logger.debug('Params passed to conductor for run', params=params)
+
+    if ask_vault_password:
+        params['vault_password'] = getpass.getpass(u"Enter the vault password: ")
 
     engine_obj.await_conductor_command(
         'run', dict(config), base_path, params,
@@ -502,7 +505,8 @@ def set_path_ownership(path, uid, gid):
 
 @conductor_only
 def run_playbook(playbook, engine, service_map, ansible_options='', local_python=False, debug=False,
-                 deployment_output_path=None, tags=None, build=False, **kwargs):
+                 deployment_output_path=None, tags=None, build=False, vault_password=None,
+                 vault_password_file=None, **kwargs):
     uid, gid = kwargs.get('host_user_uid', 1), kwargs.get('host_user_gid', 1)
     return_code = 0
     try:
@@ -546,19 +550,29 @@ def run_playbook(playbook, engine, service_map, ansible_options='', local_python
         if rc:
             raise OSError('Could not bind-mount /src into tmpdir')
 
+        if vault_password_file:
+            vault_password_file = '--vault-password-file {}'.format(vault_password_file)
+
         ansible_args = dict(inventory=quote(inventory_path),
                             playbook=quote(playbook_path),
                             debug_maybe='-vvvv' if debug else '',
                             build_args=engine.ansible_build_args if build else '',
                             orchestrate_args=engine.ansible_orchestrate_args if not build else '',
                             ansible_playbook=engine.ansible_exec_path,
-                            ansible_options=' '.join(ansible_options) or '')
+                            ansible_options=' '.join(ansible_options) or '',
+                            vault_password_file=vault_password_file if vault_password_file else '')
+
         if tags:
             ansible_args['ansible_options'] += ' --tags={} '.format(','.join(tags))
         else:
             pass
+
         # env = os.environ.copy()
         # env['ANSIBLE_REMOTE_TEMP'] = '/tmp/.ansible-${USER}/tmp'
+
+        env = {}
+        if vault_password:
+            env['ANSIBLE_VAULT_PASSWORD'] = vault_password
 
         ansible_cmd = ('{ansible_playbook} '
                        '{debug_maybe} '
@@ -566,7 +580,9 @@ def run_playbook(playbook, engine, service_map, ansible_options='', local_python
                        '-i {inventory} '
                        '{build_args} '
                        '{orchestrate_args} '
-                       '{playbook}').format(**ansible_args)
+                       '{playbook}'
+                       '{vault_password_file}').format(**ansible_args)
+
         logger.debug('Running Ansible Playbook', command=ansible_cmd, cwd='/src')
         process = subprocess.Popen(ansible_cmd,
                                    shell=True,
@@ -574,7 +590,7 @@ def run_playbook(playbook, engine, service_map, ansible_options='', local_python
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,
                                    cwd='/src',
-                                   #env=env
+                                   env=env
                                    )
 
         log_iter = iter(process.stdout.readline, '')

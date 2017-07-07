@@ -6,11 +6,12 @@ Chris Houseknecht <chouseknecht@ansible.com>
 Ryan Brown <sb@ryansb.com>
 Shubham Minglani <shubham@linux.com>
 Matt Clay <matt@mystile.com>
-Eric D. Helms <ericdhelms@gmail.com>
 Pierre-Louis Bonicoli <pierre-louis@libregerbil.fr>
+Eric D. Helms <ericdhelms@gmail.com>
 Greg DeKoenigsberg <greg.dekoenigsberg@gmail.com>
 Sandra Wills <swills@ansible.com>
 Dusty Mabe <dusty@dustymabe.com>
+Eric D Helms <eric.d.helms@gmail.com>
 Josiah Goodson <josiah.goodson@gmail.com>
 Dominik del Bondio <dominik.del.bondio@bitextender.com>
 Dylan Silva <thaumos@users.noreply.github.com>
@@ -43,7 +44,6 @@ John Matthews <jwmatthews@gmail.com>
 Sean Summers <ssummer3@nd.edu>
 Alex Yanchenko <alex@yanchenko.com>
 Balazs Zagyvai <github.zagyi@spamgourmet.com>
-Eric D Helms <eric.d.helms@gmail.com>
 Trishna Guha <trishnaguha17@gmail.com>
 Ali Asad Lotia <ali.asad.lotia@gmail.com>
 szinck1 <szinck@gmail.com>
@@ -57,3 +57,4 @@ John R Barker <john@johnrbarker.com>
 Sidharth Surana <ssurana@vmware.com>
 grimmjow <ryanbrown.dev@gmail.com>
 Shea Stewart <shea.stewart@arctiq.ca>
+Michael Carden <mike.carden@gmail.com>
