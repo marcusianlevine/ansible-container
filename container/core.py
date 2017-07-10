@@ -566,6 +566,7 @@ def run_playbook(playbook, engine, service_map, ansible_options='', local_python
         # env['ANSIBLE_REMOTE_TEMP'] = '/tmp/.ansible-${USER}/tmp'
 
         env = {}
+        env.update(os.environ)
         if vault_password:
             env['ANSIBLE_VAULT_PASSWORD'] = vault_password
 
