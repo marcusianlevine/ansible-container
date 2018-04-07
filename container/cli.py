@@ -86,6 +86,12 @@ class HostCommand(object):
                                help=u'Run with the production configuration.',
                                default=False, dest='production')
 
+        if cmd in ('build', 'deploy', 'push'):
+            subparser.add_argument('--src-mount-path', action='store',
+                                help=u'Specify the host path that should be mounted to the conductor at /src.'
+                                     u'Defaults to the directory from which ansible-container was invoked.',
+                                dest='src_mount_path', default=None)
+
         if cmd in ('deploy', 'push'):
             subparser.add_argument('--username', action='store',
                                help=u'If authentication with the registry is required, provide a valid username.',
@@ -155,10 +161,6 @@ class HostCommand(object):
                                     u'into target containers in order to run Ansible. Use when the target '
                                     u'already has an installed Python runtime.',
                                dest='local_python', default=False)
-        subparser.add_argument('--src-mount-path', action='store',
-                               help=u'Specify the host path that should be mounted to the conductor at /src.'
-                                    u'Defaults to the directory from which ansible-container was invoked.',
-                               dest='src_mount_path', default=None)
         subparser.add_argument('ansible_options', action='store',
                                help=u'Provide additional commandline arguments to '
                                     u'Ansible in executing your playbook. If you '
